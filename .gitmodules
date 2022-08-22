@@ -1,0 +1,3 @@
+[submodule "curated_apps"]
+	path = curated_apps
+	url = https://github.com/bprashan/curated_apps

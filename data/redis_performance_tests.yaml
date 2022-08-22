@@ -1,0 +1,43 @@
+---
+Default:
+  workload_home_dir: "redis"
+  workload_name: "Redis"
+  server_size: 4
+  # Note that the default server port is 6379. But we are updating here to 6378,
+  # since the client script (instance_benchmark.sh) is increasing it by 1.
+  server_port: 6378
+  client_ip: "10.66.247.185"
+  client_username: "intel"
+  client_scripts_path: "/home/intel/perf_benchmarking/gramerf_redis_client"
+  client_results_path: "/home/intel/perf_benchmarking/redis-6.0.6/log/set/"
+  rw_ratio: "1:1"
+  attestation: n
+  runtime_args: n
+  runtime_variables: n
+  signing_key_path :
+  create_local_image: n
+  end_test: n
+  test_option: y
+  docker_image: redis/redis:latest
+  
+test_redis_curapp_perf_48_data_size_1_1_rw_ratio:
+  data_size: 48
+
+test_redis_curapp_perf_48_data_size_1_9_rw_ratio:
+  data_size: 48
+  rw_ratio: "1:9"
+
+test_redis_curapp_perf_1024_data_size_1_1_rw_ratio:
+  data_size: 1024
+
+test_redis_curapp_perf_1024_data_size_1_9_rw_ratio:
+  data_size: 1024
+  rw_ratio: "1:9"
+
+test_redis_curapp_perf_4096_data_size_1_1_rw_ratio:
+  data_size: 4096
+
+test_redis_curapp_perf_4096_data_size_1_9_rw_ratio:
+  data_size: 4096
+  rw_ratio: "1:9"  
+  

@@ -30,5 +30,5 @@ class Workload(object):
         return self.workload_obj.setup_workload(test_config_dict)
 
     # execute_workload - implement in a subclass if needed
-    def execute_workload(self, test_config_dict):
-        self.workload_obj.execute_workload(test_config_dict)
+    def execute_workload(self, test_instance, test_config_dict):
+        self.workload_obj.execute_workload(test_instance, test_config_dict)

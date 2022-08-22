@@ -1,8 +1,5 @@
-import sys
 import yaml
-import shutil
 import subprocess
-import lsb_release
 import csv
 from datetime import date
 import collections

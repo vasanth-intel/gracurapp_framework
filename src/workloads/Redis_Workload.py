@@ -8,21 +8,24 @@ from curated_apps.libs import curated_app_libs
 
 class RedisWorkload:
     def __init__(self, test_config_dict):
-        # Redis home dir => "~/gracurapp_framework/redis"
-        self.workload_home_dir = os.path.join(FRAMEWORK_HOME_DIR, test_config_dict['workload_home_dir'])
         self.server_ip_addr = utils.determine_host_ip_addr()
 
     def pull_workload_default_image(self, test_config_dict):
         try:
             workload_docker_image_name = utils.get_docker_image_name(test_config_dict)
             workload_docker_pull_cmd = f"docker pull {workload_docker_image_name}"
-            utils.exec_shell_cmd(workload_docker_pull_cmd)
+            print(f"\n-- Pulling latest redis docker image from docker hub..\n", workload_docker_pull_cmd)
+            utils.exec_shell_cmd(workload_docker_pull_cmd, None)
         except (docker.errors.ImageNotFound, docker.errors.APIError):
             raise Exception(f"\n-- Docker pull for image {workload_docker_image_name} failed!!")
 
     def update_server_details_in_client(self, tcd):
         client_name = tcd['client_username'] + "@" + tcd['client_ip']
         client_file_path = os.path.join(tcd['client_scripts_path'], "instance_benchmark.sh")
+
+        # Setting 'SSHPASS' env variable for ssh commands
+        print(f"\n-- Updating 'SSHPASS' env-var\n")
+        os.environ['SSHPASS'] = "intel@123"
 
         # Updating Server IP.
         host_sed_cmd = f"sed -i 's/^export HOST.*/export HOST=\"{self.server_ip_addr}\"/' {client_file_path}"
@@ -37,10 +40,6 @@ class RedisWorkload:
         print("\n-- Updating server Port within redis client script..")
         print(update_server_port_cmd)
         utils.exec_shell_cmd(update_server_port_cmd)
-
-        # Setting 'SSHPASS' env variable for ssh commands
-        print(f"\n-- Updating 'SSHPASS' env-var\n")
-        os.environ['SSHPASS'] = "intel@123"
 
     def pre_actions(self, test_config_dict):
         #utils.set_threads_cnt_env_var()
@@ -87,9 +86,12 @@ class RedisWorkload:
 
         return client_ssh_cmd
 
-    def free_redis_server_port(self, tcd):
+    def free_redis_server_port(self, tcd, e_mode):
         container_id = None
         workload_docker_image_name = utils.get_docker_image_name(tcd)
+        print(f"\n-- Killing docker container with image name: {workload_docker_image_name} to free the server port..")
+        if e_mode == 'gramine-sgx':
+            workload_docker_image_name = "gsc-" + workload_docker_image_name + "x"
         docker_container_list = utils.exec_shell_cmd("docker ps").splitlines()
         for container_item in docker_container_list:
             if container_item.split()[1] == workload_docker_image_name:
@@ -163,7 +165,7 @@ class RedisWorkload:
         trd[tcd['workload_name']].update({tcd['test_name']+'_latency': test_dict_latency})
         trd[tcd['workload_name']].update({tcd['test_name']+'_throughput': test_dict_throughput})
 
-        os.chdir(self.workload_home_dir)
+        os.chdir(FRAMEWORK_HOME_DIR)
 
     def process_results(self, tcd):
         csv_res_folder = os.path.join(PERF_RESULTS_DIR, tcd['workload_name'])
@@ -192,7 +194,7 @@ class RedisWorkload:
         for e_mode in tcd['exec_mode']:
             print(f"\n-- Executing {tcd['test_name']} in {e_mode} mode")
 
-            if e_mode is 'native':
+            if e_mode == 'native':
                 # Bring up the native redis server.
                 workload_docker_image_name = utils.get_docker_image_name(tcd)
                 docker_native_cmd = f"docker run --rm --net=host -t {workload_docker_image_name} &"
@@ -209,7 +211,7 @@ class RedisWorkload:
             
             time.sleep(5)
 
-            self.free_redis_server_port(tcd)
+            self.free_redis_server_port(tcd, e_mode)
 
             time.sleep(TEST_SLEEP_TIME_BW_ITERATIONS)
         

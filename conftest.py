@@ -2,15 +2,7 @@ import pytest
 import re
 from src.config_files.constants import *
 from src.libs import utils
-#from src.libs import gramine_libs
 from collections import defaultdict
-#import sys
-#s_path_program = os.path.dirname(__file__)
-#sys.path.append(s_path_program + '../../')
-#sys.path.append("curated_apps")
-#from curated_apps import conftest
-#from curated_apps.conftest import *
-#from curated_apps.conftest import *
 
 
 # Global dictionary to hold the results of all the tests in the following format.
@@ -87,7 +79,7 @@ def gracurapp_setup():
     yield
 
     # Generate the report using the global results dict.
-    #utils.generate_performance_report(trd)
+    utils.generate_performance_report(trd)
 
 
 def pytest_addoption(parser):
